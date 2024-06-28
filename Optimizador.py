@@ -2,19 +2,17 @@ import numpy as np
 from scipy.optimize import minimize
 import streamlit as st
 
-def optimizar():
+def optimizar(  materiales,
+                Costo_variable_KG,
+                Costo_fijo_total,
+                Capacidad_produccion,
+                precio_inicial,
+                produccion_inicial,
+                elasticidad_pesos,
+                elasticidad_kg,
+                capacidad_maxima=1):
     # Definir datos (estos valores deben ser proporcionados para cada material)
-    materiales = ['Chorizos', 'material_2']
-
-    # Parámetros (deben ser diccionarios indexados por materiales)
-    Costo_variable_KG = {'Chorizos': 10341, 'material_2': 3}
-    Costo_fijo_total = {'Chorizos': 4981461166, 'material_2': 150}
-    Capacidad_produccion = {'Chorizos': 770879, 'material_2': 600}
-    precio_inicial = {'Chorizos': 35096, 'material_2': 15}
-    produccion_inicial = {'Chorizos': 691245, 'material_2': 450}
-    elasticidad_pesos = {'Chorizos': 1, 'material_2': 0.3}
-    elasticidad_kg = {'Chorizos': 400, 'material_2': 0.8}
-    capacidad_maxima=1
+    # materiales = ['Chorizos']
 
     # Variables iniciales (precios y cantidades iniciales para optimización)
     x0 = np.array([precio_inicial[i] for i in materiales] + [produccion_inicial[i] for i in materiales])

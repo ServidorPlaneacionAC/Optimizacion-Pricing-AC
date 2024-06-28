@@ -27,8 +27,9 @@ class CLS_Estructura_Visualizacion:
         st.title(titulo)
         st.header("Evaluar Precio Óptimo de una linea")
 
+        materiales=[]
         linea ={}
-        Costo_variable_KG ={'ej':1}
+        Costo_variable_KG ={}
         Costo_fijo_total ={}
         Capacidad_produccion ={}
         produccion_inicial ={}
@@ -41,7 +42,7 @@ class CLS_Estructura_Visualizacion:
             # issue = st.text_area("Describe the issue")
             frm_linea = st.selectbox("Linea a evaluar", ["Otro", "Chorizos", "Salchichas","Salchichones",
                                                         "Jamones", "Larga Vida", "Carnes Frescas", "Mortadelas"])
-            material = st.text_input("Material a evaluar")
+            frm_material = st.text_input("Material a evaluar")
             frm_Costo_variable_KG = st.number_input("Costo Variable por KG", min_value=0)
             frm_Costo_fijo_total = st.number_input("Costo Fijo de la linea", min_value=0)
             frm_Capacidad_produccion = st.number_input("Capacidad de Producción en KG al mes", min_value=0)
@@ -54,15 +55,28 @@ class CLS_Estructura_Visualizacion:
 
         if frm_submitted:
             # Agregar los valores del formulario a los diccionarios
-            linea[material] = frm_linea
-            Costo_variable_KG[material] = frm_Costo_variable_KG
-            Costo_fijo_total[material] = frm_Costo_fijo_total
-            Capacidad_produccion[material] = frm_Capacidad_produccion
-            produccion_inicial[material] = frm_produccion_inicial
-            precio_inicial[material] = frm_precio_inicial
-            elasticidad_pesos[material] = frm_elasticidad_pesos
-            elasticidad_kg[material] = frm_elasticidad_kg
-            capacidad_maxima[material] = frm_capacidad_maxima
+            materiales.append(frm_material)
+            linea[frm_material] = frm_linea
+            Costo_variable_KG[frm_material] = frm_Costo_variable_KG
+            Costo_fijo_total[frm_material] = frm_Costo_fijo_total
+            Capacidad_produccion[frm_material] = frm_Capacidad_produccion
+            produccion_inicial[frm_material] = frm_produccion_inicial
+            precio_inicial[frm_material] = frm_precio_inicial
+            elasticidad_pesos[frm_material] = frm_elasticidad_pesos
+            elasticidad_kg[frm_material] = frm_elasticidad_kg
+            capacidad_maxima[frm_material] = frm_capacidad_maxima
+
+            st.write(
+            materiales,
+            Costo_variable_KG,
+            Costo_fijo_total,
+            Capacidad_produccion,
+            produccion_inicial,
+            precio_inicial,
+            elasticidad_pesos,
+            elasticidad_kg,
+            # capacidad_maxima
+            )
 
             optimizar()
       
