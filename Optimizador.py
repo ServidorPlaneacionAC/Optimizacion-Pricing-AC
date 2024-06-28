@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 import streamlit as st
+import pandas as pd
 
 def optimizar(  materiales,
                 Costo_variable_KG,
@@ -10,9 +11,10 @@ def optimizar(  materiales,
                 produccion_inicial,
                 elasticidad_pesos,
                 elasticidad_kg,
-                capacidad_maxima=1):
+                capacidad_maxima):
+    
     # Definir datos (estos valores deben ser proporcionados para cada material)
-    # materiales = ['Chorizos']
+
 
     # Variables iniciales (precios y cantidades iniciales para optimización)
     x0 = np.array([precio_inicial[i] for i in materiales] + [produccion_inicial[i] for i in materiales])
@@ -38,7 +40,7 @@ def optimizar(  materiales,
         # Capacidad produccion
         restricciones.append({
             'type': 'ineq',
-            'fun': lambda x, i=i: Capacidad_produccion[materiales[i]]*capacidad_maxima - x[len(materiales) + i]
+            'fun': lambda x, i=i: Capacidad_produccion[materiales[i]]*capacidad_maxima[materiales[i]] - x[len(materiales) + i]
         })
         # Precio final <= Precio inicial
         restricciones.append({
@@ -55,17 +57,37 @@ def optimizar(  materiales,
     solucion = minimize(objetivo, x0, constraints=restricciones, bounds=[(0, None)] * len(x0))
 
     # Mostrar resultados
+    precio_final={}
+    KG_Propuestos={}
+    beneficio_esperado={}
     if solucion.success:
         print("Estado: Óptimo encontrado")
         precio_final_sol = solucion.x[:len(materiales)]
         kg_sol = solucion.x[len(materiales):]
         for i in range(len(materiales)):
             material = materiales[i]
-            st.write(f"Linea: {material}")
-            st.write(f"Precio final: {precio_final_sol[i]}")
-            st.write(f"Producción final (kg): {kg_sol[i]}")
+            # st.write(f"Linea: {material}")
+            # st.write(f"Precio final: {precio_final_sol[i]}")
+            # st.write(f"Producción final (kg): {kg_sol[i]}")
             beneficio = precio_final_sol[i] - Costo_variable_KG[material] - (Costo_fijo_total[material] / kg_sol[i])
-            st.write(f"Beneficio: {beneficio}")
-            st.write()
+            # st.write(f"Beneficio: {beneficio}")
+            # st.write()            
+            
+            precio_final[material] = precio_final_sol[i]
+            KG_Propuestos[material] = kg_sol[i]
+            beneficio_esperado[material] = beneficio
+
     else:
-        st.write("No se encontró una solución óptima.")
+        st.write("No se encontró una solución óptima")
+    
+    return precio_final,    KG_Propuestos,    beneficio_esperado
+
+
+def generar_dataframe(n, Precio_venta, Costos_fijos):
+    data = {
+        'KG producidos': range(1, n + 1),
+        'Precio de venta KG': [Precio_venta] * n,
+        'Costos fijos por KG': [x / Costos_fijos for x in range(1, n + 1)]
+    }
+    df = pd.DataFrame(data)
+    st.wrtie(df)

@@ -1,5 +1,5 @@
 import streamlit as st
-from Optimizador import optimizar
+from Optimizador import optimizar, generar_dataframe
 
 class CLS_Estructura_Visualizacion:
     '''
@@ -66,19 +66,22 @@ class CLS_Estructura_Visualizacion:
             elasticidad_kg[frm_material] = frm_elasticidad_kg
             capacidad_maxima[frm_material] = frm_capacidad_maxima
 
-            st.write(
-            materiales,
-            Costo_variable_KG,
-            Costo_fijo_total,
-            Capacidad_produccion,
-            produccion_inicial,
-            precio_inicial,
-            elasticidad_pesos,
-            elasticidad_kg,
-            # capacidad_maxima
+            precio,kg,ben=optimizar(
+                materiales,
+                Costo_variable_KG,
+                Costo_fijo_total,
+                Capacidad_produccion,
+                precio_inicial,
+                produccion_inicial,
+                elasticidad_pesos,
+                elasticidad_kg,
+                capacidad_maxima
             )
+            st.write(precio)
+            st.write(kg)
+            st.write(ben)
 
-            optimizar()
+            # generar_dataframe(KG)
       
     def Mostrar_Pantalla_archivos_muestra(self, titulo) -> None:
         '''
