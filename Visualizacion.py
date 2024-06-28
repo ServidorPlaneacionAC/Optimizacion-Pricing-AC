@@ -1,4 +1,5 @@
 import streamlit as st
+from Optimizador import optimizar
 
 class CLS_Estructura_Visualizacion:
     '''
@@ -8,27 +9,6 @@ class CLS_Estructura_Visualizacion:
     def __init__(self) -> None:
       self.mostrar_navegabilidad()
       
-    def Mostrar_Pantalla_principal(self, titulo) -> None:
-        '''
-        Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
-        '''
-        st.title(titulo)
-        st.header("Add a ticket")
-
-        # We're adding tickets via an `st.form` and some input widgets. If widgets are used
-        # in a form, the app will only rerun once the submit button is pressed.
-        with st.form("add_ticket_form"):
-            issue = st.text_area("Describe the issue")
-            priority = st.selectbox("Priority", ["High", "Medium", "Low"])
-            submitted = st.form_submit_button("Submit")
-
-      
-    def Mostrar_Pantalla_archivos_muestra(self, titulo) -> None:
-        '''
-        Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
-        '''
-        st.title(titulo)
-
     def mostrar_navegabilidad(self):
         st.sidebar.header("Navegación")
         page = st.sidebar.radio("Ir a:", ["Inicio", "Archivos de muestra","¿Cómo funciona?"])
@@ -40,7 +20,59 @@ class CLS_Estructura_Visualizacion:
         elif page=="¿Cómo funciona?":
             self.Mostrar_Pantalla_como_funciona('¿Cómo funciona?')
       
+    def Mostrar_Pantalla_principal(self, titulo) -> None:
+        '''
+        Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
+        '''
+        st.title(titulo)
+        st.header("Evaluar Precio Óptimo de una linea")
+
+        linea ={}
+        Costo_variable_KG ={'ej':1}
+        Costo_fijo_total ={}
+        Capacidad_produccion ={}
+        produccion_inicial ={}
+        precio_inicial ={}
+        elasticidad_pesos ={}
+        elasticidad_kg ={}
+        capacidad_maxima ={}
+
+        with st.form("add_ticket_form"):
+            # issue = st.text_area("Describe the issue")
+            frm_linea = st.selectbox("Linea a evaluar", ["Otro", "Chorizos", "Salchichas","Salchichones",
+                                                        "Jamones", "Larga Vida", "Carnes Frescas", "Mortadelas"])
+            material = st.text_input("Material a evaluar")
+            frm_Costo_variable_KG = st.number_input("Costo Variable por KG", min_value=0)
+            frm_Costo_fijo_total = st.number_input("Costo Fijo de la linea", min_value=0)
+            frm_Capacidad_produccion = st.number_input("Capacidad de Producción en KG al mes", min_value=0)
+            frm_produccion_inicial = st.number_input("Producción Actual en KG al mes", min_value=0)
+            frm_precio_inicial = st.number_input("Precio Actual de Venta", min_value=0)
+            frm_elasticidad_pesos = st.slider("Elasticidad del precio, al aumentar los pesos indicados generará una reducción de consumo equivalente a KG al mes", 0, 100)
+            frm_elasticidad_kg = st.slider("Elasticidad en KG, al aumentar los pesos indicados anteriormente cuantos reduce en KG el coonsumo al mes", 0, 1000)
+            frm_capacidad_maxima = st.slider("Cuanto de la capacidad máxima de la linea se usará %", 0, 100)/100
+            frm_submitted = st.form_submit_button("Evaluar")
+
+        if frm_submitted:
+            # Agregar los valores del formulario a los diccionarios
+            linea[material] = frm_linea
+            Costo_variable_KG[material] = frm_Costo_variable_KG
+            Costo_fijo_total[material] = frm_Costo_fijo_total
+            Capacidad_produccion[material] = frm_Capacidad_produccion
+            produccion_inicial[material] = frm_produccion_inicial
+            precio_inicial[material] = frm_precio_inicial
+            elasticidad_pesos[material] = frm_elasticidad_pesos
+            elasticidad_kg[material] = frm_elasticidad_kg
+            capacidad_maxima[material] = frm_capacidad_maxima
+
+            optimizar()
+      
     def Mostrar_Pantalla_archivos_muestra(self, titulo) -> None:
+        '''
+        Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
+        '''
+        st.title(titulo)
+      
+    def Mostrar_Pantalla_como_funciona(self, titulo) -> None:
             st.title(titulo)    
             st.subheader('Carga de datos')
             st.write('''Para generar un pronóstico es necesario suministrar información 
