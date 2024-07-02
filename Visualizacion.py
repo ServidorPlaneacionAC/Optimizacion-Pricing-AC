@@ -14,7 +14,7 @@ class CLS_Estructura_Visualizacion:
         page = st.sidebar.radio("Ir a:", ["Inicio", "Archivos de muestra","¿Cómo funciona?"])
 
         if page == "Inicio":
-            self.Mostrar_Pantalla_principal('Titulo')
+            self.Mostrar_Pantalla_principal('Encontrar Precio óptimo')
         elif page == "Archivos de muestra":
             self.Mostrar_Pantalla_archivos_muestra('Archivos de muestra')
         elif page=="¿Cómo funciona?":
