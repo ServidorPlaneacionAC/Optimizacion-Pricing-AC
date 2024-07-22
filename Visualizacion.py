@@ -1,5 +1,5 @@
 import streamlit as st
-from Optimizador import optimizar, generar_dataframe
+from Optimizador import optimizar, generar_dataframe_calculo_Kg
 from Visualizador_Pricing import CLS_Visualizacion_pricing
 
 class CLS_Estructura_Visualizacion:
