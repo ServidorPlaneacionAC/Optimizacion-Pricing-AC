@@ -1,6 +1,5 @@
 import streamlit as st
 from Optimizador import optimizar, generar_dataframe_calculo_Kg
-from streamlit_echarts import st_echarts
 import mplcursors
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
