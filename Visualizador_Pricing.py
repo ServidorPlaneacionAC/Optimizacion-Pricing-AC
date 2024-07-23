@@ -63,10 +63,12 @@ class CLS_Visualizacion_pricing:
             )
             df=generar_dataframe_calculo_Kg(Costos_fijos=frm_Costo_fijo_total
                       ,Precio_venta=precio[frm_material]
-                      ,kg_producidos=int(kg[frm_material])
+                      ,kg_producidos=int(produccion_inicial[frm_material])
+                      ,kg_propuestos=int(kg[frm_material])
                       ,costo_variable= frm_Costo_variable_KG
                       ) 
-            st.write('ahora si gpt')
+            st.write(df)
+            st.write('df')
             self.grafico_lineas_gpt(df)
 
 
@@ -119,34 +121,38 @@ class CLS_Visualizacion_pricing:
         }
         st_echarts(options=options, height="400px")
 
-    def grafico_lineas_gpt(self,df, titulo='Gráfico de líneas'):
+
+    def grafico_lineas_gpt(self, df, titulo='Gráfico de líneas'):
         st.write(df.columns)
-        
-        # Crear una lista de series de datos a partir de las columnas del DataFrame
+
+        # Usar la primera columna como eje x
+        eje_x = df.iloc[:, 0].tolist()
+        series_data = df.iloc[:, 1:]  # Excluir la primera columna de las series de datos
+
+        # Crear una lista de series de datos a partir de las columnas restantes del DataFrame
         series = [
             {
                 "name": col,
                 "type": "line",
                 "stack": "Total",
-                "data": df[col].tolist(),  # Convertir los datos de la columna a una lista
+                "data": series_data[col].tolist(),  # Convertir los datos de la columna a una lista
             }
-            for col in df.columns  # Iterar sobre todas las columnas
+            for col in series_data.columns  # Iterar sobre todas las columnas restantes
         ]
         
         opciones = {
             "title": {"text": titulo},
             "tooltip": {"trigger": "axis"},
-            "legend": {"data": df.columns.tolist()},  # Usar los nombres de las columnas como leyenda
+            "legend": {"data": series_data.columns.tolist()},  # Usar los nombres de las columnas restantes como leyenda
             "grid": {"left": "3%", "right": "4%", "bottom": "3%", "containLabel": True},
             "toolbox": {"feature": {"saveAsImage": {}}},
             "xAxis": {
-                "type": "value",
+                "type": "category",
                 "boundaryGap": False,
-                # "data": df[df.columns[0]].tolist(),  # Usar la primera columna como etiquetas del eje x
+                "data": eje_x,  # Usar la primera columna como etiquetas del eje x
             },
             "yAxis": {"type": "value"},
             "series": series,  # Añadir las series de datos generadas
         }
         
         st_echarts(options=opciones, height="400px")
-
