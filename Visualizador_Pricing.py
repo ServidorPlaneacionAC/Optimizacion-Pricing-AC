@@ -88,7 +88,6 @@ class CLS_Visualizacion_pricing:
             self.grafica_lineas(df)
         else:
             st.error('No se encuentra un posible mejor escenario ')
-
     def formatear_dinero(self,valor,decimales=2, simbolo=''):
         """
         Redondea un valor y lo muestra en formato de dinero.
