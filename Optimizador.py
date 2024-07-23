@@ -84,13 +84,16 @@ def optimizar(  materiales,
 
 
 def generar_dataframe_calculo_Kg(kg_producidos,kg_propuestos, Precio_venta, Costos_fijos, costo_variable):
+    if (kg_producidos> kg_propuestos*0.5):
+        kg_producidos=int(kg_propuestos*0.5)
+        st.write('condicional')
     data = {
-        'KG producidos': [x for x in range(kg_producidos, kg_propuestos + 1)],
+        'KG producidos': [x for x in range(kg_producidos, kg_propuestos)],
         'Precio de venta KG': [Precio_venta]*(-kg_producidos + kg_propuestos),
-        'Costos fijos por KG': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos + 1)],
+        'Costos fijos por KG': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos)],
         'Costos variable por KG': [costo_variable]*(-kg_producidos + kg_propuestos),
-        'Costos totales por KG': [(Costos_fijos / kg) + costo_variable for kg in range(kg_producidos, kg_propuestos + 1)],
-        'Beneficio por KG': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos + 1)]
+        'Costos totales por KG': [(Costos_fijos / kg) + costo_variable for kg in range(kg_producidos, kg_propuestos )],
+        'Beneficio por KG': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )]
     }
     df = pd.DataFrame(data)
 

@@ -1,6 +1,9 @@
 import streamlit as st
 from Optimizador import optimizar, generar_dataframe_calculo_Kg
 from streamlit_echarts import st_echarts
+import mplcursors
+from plotly.subplots import make_subplots
+import plotly.graph_objs as go
 
 class CLS_Visualizacion_pricing:
     '''
@@ -67,9 +70,10 @@ class CLS_Visualizacion_pricing:
                       ,kg_propuestos=int(kg[frm_material])
                       ,costo_variable= frm_Costo_variable_KG
                       ) 
-            st.write(df)
-            st.write('df')
-            self.grafico_lineas_gpt(df)
+            # st.write(df)
+            st.write('df cor59')
+            st.write(df[df.columns[0]])
+            self.grafica_linea_cursosrs(df)
 
 
     def grafico_lineas(self,df,titulo='Gráfico de lineas'):  
@@ -123,9 +127,6 @@ class CLS_Visualizacion_pricing:
 
 
     def grafico_lineas_gpt(self, df, titulo='Gráfico de líneas'):
-        st.write(df.columns)
-
-        # Usar la primera columna como eje x
         eje_x = df.iloc[:, 0].tolist()
         series_data = df.iloc[:, 1:]  # Excluir la primera columna de las series de datos
 
@@ -151,8 +152,51 @@ class CLS_Visualizacion_pricing:
                 "boundaryGap": False,
                 "data": eje_x,  # Usar la primera columna como etiquetas del eje x
             },
-            "yAxis": {"type": "value"},
+            "yAxis": {"type": "value", "data":[x for x in range(0, 20000)]},
             "series": series,  # Añadir las series de datos generadas
         }
         
         st_echarts(options=opciones, height="400px")
+
+  
+    def grafica_linea_cursosrs(self,df,nuevo_precio=0.0):  
+
+        ''' Metodo que recibe una lista de elementos que varian en funcion del eje y '''       
+        kg=df[df.columns[0]]
+        Precio_venta=df[df.columns[1]]
+        Costos_fijos=df[df.columns[2]]
+        costo_variable=df[df.columns[3]]
+        Precio_venta=df[df.columns[4]]
+        
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(go.Scatter(x=kg, y=Precio_venta, 
+                                name='Precio_venta', mode='lines', line=dict(color='green'), legendrank=True))
+    
+        fig.add_trace(go.Scatter(x=kg, y=Costos_fijos, 
+                                name='Costos_fijos', mode='lines', line=dict(color='Orange'), legendrank=True))
+    
+        fig.add_trace(go.Scatter(x=kg, y=costo_variable, 
+                                name='costo_variable', mode='lines', line=dict(color='Red'), legendrank=True))
+        
+        # fig.add_trace(go.Scatter(x=kg, y=linea_base, 
+        #                         name='linea base', mode='lines', line=dict(color='Yellow'), legendrank=True))
+
+        if nuevo_precio>0:
+            fig.add_shape(
+                type="line",
+                x0=nuevo_precio, y0=min(Precio_venta), x1=nuevo_precio, y1=max(Precio_venta),
+                line=dict(color="blue", width=2, dash="dash"),
+            )
+
+        fig.update_layout(title='Variación de indicadores financieros en funcion del precio',
+                        xaxis=dict(title='Precios'),
+                        yaxis=dict(title='Valor'),
+                        legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="right",
+                        x=1
+                    ))
+
+        st.write(fig)
