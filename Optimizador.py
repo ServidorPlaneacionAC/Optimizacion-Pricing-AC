@@ -13,6 +13,26 @@ def optimizar(  materiales,
                 elasticidad_kg,
                 capacidad_maxima):
     
+
+    """
+        Optimiza los precios y cantidades producidas de varios materiales para maximizar el beneficio.
+
+        Parámetros:
+        - materiales (list): Lista de materiales.
+        - Costo_variable_KG (dict): Diccionario con el costo variable por kilogramo para cada material.
+        - Costo_fijo_total (dict): Diccionario con el costo fijo total asociado a la producción de cada material.
+        - Capacidad_produccion (dict): Diccionario con la capacidad de producción inicial de cada material.
+        - precio_inicial (dict): Diccionario con el precio inicial de cada material.
+        - produccion_inicial (dict): Diccionario con la producción inicial en kg de cada material.
+        - elasticidad_pesos (dict): Diccionario con la elasticidad del precio en relación a la cantidad producida.
+        - elasticidad_kg (dict): Diccionario con la elasticidad de la cantidad producida en relación al precio.
+        - capacidad_maxima (dict): Diccionario con la capacidad máxima de producción permitida para cada material.
+
+        Retorna:
+        - precio_final (dict): Diccionario con los precios finales óptimos para cada material.
+        - KG_Propuestos (dict): Diccionario con las cantidades producidas óptimas para cada material.
+        - beneficio_esperado (dict): Diccionario con los beneficios esperados para cada material.
+    """    
     # Definir datos (estos valores deben ser proporcionados para cada material)
 
 
@@ -85,9 +105,35 @@ def optimizar(  materiales,
 
 
 def generar_dataframe_calculo_Kg(kg_producidos,kg_propuestos, Precio_venta, Costos_fijos, costo_variable,elasticidad_pesos,elasticidad_kg,precio_inicial,produccion_inicial,precio_analisis):
+    """
+        Genera un DataFrame con cálculos relacionados con la producción, precios de venta, costos y beneficios por kilogramo producido.
+
+        Parámetros:
+        - kg_producidos (int): Cantidad inicial de kilogramos producidos.
+        - kg_propuestos (int): Cantidad propuesta de kilogramos a producir.
+        - Precio_venta (float): Precio de venta del kilogramo.
+        - Costos_fijos (float): Costos fijos totales.
+        - costo_variable (float): Costo variable por kilogramo.
+        - elasticidad_pesos (float): Elasticidad del precio en relación a la cantidad producida.
+        - elasticidad_kg (float): Elasticidad de la cantidad producida en relación al precio.
+        - precio_inicial (float): Precio inicial del kilogramo.
+        - produccion_inicial (float): Producción inicial en kilogramos.
+        - precio_analisis (float): Precio de análisis del kilogramo.
+
+        Retorna:
+        - df (pd.DataFrame): DataFrame con los siguientes cálculos por kilogramo:
+            - 'KG producidos': Rango de kilogramos desde kg_producidos hasta kg_propuestos.
+            - 'Precio de venta KG': Precio de venta calculado por kilogramo.
+            - 'Costos fijos por KG': Costos fijos por kilogramo.
+            - 'Costos variable por KG': Costos variables por kilogramo.
+            - 'Costos totales por KG': Costos totales (fijos + variables) por kilogramo.
+            - 'Beneficio por KG': Beneficio por kilogramo.
+            - 'KG producidos_real': Precio de análisis repetido para cada kilogramo.
+            - 'Beneficio analisis': Beneficio basado en el precio de análisis por kilogramo.
+    """ 
+    
     data = {
         'KG producidos':[x for x in range(kg_producidos, kg_propuestos)],
-        # 'Precio de venta KG': [Precio_venta]*(-kg_producidos + kg_propuestos),
         'Precio de venta KG':[precio_inicial+elasticidad_pesos*((produccion_inicial-x)/elasticidad_kg) for x in range(kg_producidos, kg_propuestos) ],
         'Costos fijos por KG': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos)],
         'Costos variable por KG': [costo_variable]*(-kg_producidos + kg_propuestos),

@@ -46,49 +46,48 @@ class CLS_Estructura_Visualizacion:
       
     def Mostrar_Pantalla_como_funciona(self, titulo) -> None:
             st.title(titulo)    
-            st.subheader('Carga de datos')
-            st.write('''Para generar un pronóstico es necesario suministrar información 
-                     que sirva de soporte para los nuevos datos a generar, en este caso es necesario 
-                     cargar la historia semana a semana de las reses negociadas y su precio, el formato 
-                     establecido está indicado en el segmento "Archivos de muestra", allí se muestran
-                      algunas tablas que se pueden descargar como formato csv, los titulos deben ser respetados
-                      y la información que se cargue debe estar revisada para generar un pronóstico aceptable, 
-                      una vez se descarguen los archivos de muestra, se llenan con la información correspondiente,
-                      se guardan como archvos "xlsx" y se cargan en los botones habilitados en el segmento "Inicio". 
-                     Es posible cargar una serie de tiempo con distintas categorias, al hacer esto se generará un modelo
-                     y un pronóstico para cada una de ellas.
-                     
-                      ''')
-            
-            st.subheader('¿Qué hay detrás?')
-            st.write('''Cuando se cargan los datos, la herramienta genera el mejor modelo de serie de tiempo 
-                     que se puede ajustar a los datos cargados, genera el prónostico y lo grafica con un intervalo de
-                     confianza del 95% y al 65%, se puede mover algunos parametros como la cantidad de datos a ver de la serie real
-                     y la cantidad de datos a pronosticar; el modelo generado tambien puede ser modificado, agregandole un componente
-                     estacional, un atributo de tendencia y además seleccionar el tamaño de la muestra usado para generar el mejor modelo, es decir puedes generar
-                     tu modelo usando todos los datos cargados o solo los últimos que escojas, es importante mencionar que puedes usar una 
-                     muestra pequeña de datos para generar el modelo y aún así ver tu serie de datos completa.  ''')                   
-            st.write('''Siendo un poco mas técnicos, Cuando se habla del "mejor modelo" en el contexto de esta función, 
-                     se refiere al modelo que mejor se ajusta a los datos de la serie temporal proporcionada. 
-                     Esto significa que el modelo seleccionado tiene la capacidad de hacer predicciones precisas 
-                     para valores futuros basados en el patrón histórico de los datos. El proceso de encontrar el 
-                     "mejor modelo" generalmente implica probar y comparar diferentes combinaciones de parámetros 
-                     del modelo (como el orden AR, el orden de diferenciación, el orden MA, etc.) y seleccionar 
-                     aquel que minimiza una métrica de evaluación, como el error cuadrático medio (MSE) o el 
-                     criterio de información bayesiana (BIC) - Usado actualmente -.  ''')                   
-            st.write(''' Al ser una función de ajuste automático, puede generar varios tipos de modelos, algunos de los cuales son:
-                     *ARIMA* (Autoregressive Integrated Moving Average): Un modelo que combina componentes autoregresivas, de media móvil y de diferenciación para capturar la estructura de la serie temporal.
-                     *SARIMA* (Seasonal ARIMA): Similar a ARIMA, pero con la capacidad de modelar patrones estacionales en los datos.
-                     *SARIMAX* (Seasonal ARIMA with exogenous variables): Una extensión de SARIMA que permite incluir variables exógenas que pueden influir en la serie temporal.
-                     *ARIMAX* (ARIMA with exogenous variables): Similar a SARIMAX pero sin componente estacional.''')                   
-            st.write('''
-                     Cada uno de estos modelos tiene sus propias características y puede ser útil en diferentes 
-                     situaciones dependiendo de la naturaleza de los datos y los patrones que se intenten capturar. La función usada 
-                     ayuda a identificar el modelo óptimo entre estas opciones, teniendo en cuenta la complejidad de los datos y la 
-                     precisión de las predicciones.  
-                     ''')
-            
-            st.subheader('Soporte')
+            st.subheader("Modelo Matemático del Problema de Optimización")
+            st.write('''Para desarrollar esta solución se uso programación lineal para encontrar el valor óptimo donde
+                     el modelo matemático busca maximizar el beneficio total, ajustando los precios y las cantidades 
+                     producidas de varios materiales. Para lograr esto, se consideran varios factores como los costos fijos y variables,
+                      las capacidades de producción, y la elasticidad del precio y la producción ''')
+
+            st.markdown("### Variables de Decisión:")
+            st.latex(r"p_i \text{: Precio final del material } i")
+            st.latex(r"q_i \text{: Cantidad producida del material } i")
+
+            st.markdown("### Parámetros:")
+            st.latex(r"\text{CV}_i \text{: Costo variable por kilogramo del material } i")
+            st.latex(r"\text{CF}_i \text{: Costo fijo total del material } i")
+            st.latex(r"\text{CP}_i \text{: Capacidad de producción inicial del material } i")
+            st.latex(r"\text{PI}_i \text{: Precio inicial del material } i")
+            st.latex(r"\text{QI}_i \text{: Producción inicial del material } i")
+            st.latex(r"\epsilon_{p,i} \text{: Elasticidad del precio con respecto a la cantidad producida del material } i")
+            st.latex(r"\epsilon_{q,i} \text{: Elasticidad de la cantidad producida con respecto al precio del material } i")
+            st.latex(r"\text{CM}_i \text{: Capacidad máxima de producción permitida para el material } i")
+
+            st.markdown("### Función Objetivo:")
+            st.latex(r"\max \sum_{i=1}^{n} \left( p_i - \text{CV}_i - \frac{\text{CF}_i}{q_i} \right) q_i")
+            st.write('''El objetivo principal es maximizar el beneficio total. El beneficio por cada material 
+                     se calcula como la diferencia entre el precio de venta y los costos (tanto fijos como variables),
+                       multiplicado por la cantidad producida:''')
+
+            st.markdown("### Restricciones:") 
+            st.write('''La cantidad producida qi está relacionada con el precio final pi
+                       mediante la elasticidad del precio y de la producción. La ecuación es:
+                    ''')
+            st.latex(r"1. \ q_i = \text{QI}_i - \left( \frac{p_i - \text{PI}_i}{\epsilon_{p,i}} \right) \epsilon_{q,i}")
+           
+            st.write('''La cantidad producida qi no puede exceder la capacidad máxima de producción permitida:''')
+            st.latex(r"2. \ q_i \leq \text{CP}_i \times \text{CM}_i")
+
+            st.write('''El precio final pi no puede ser mayor que el precio inicial:''')
+            st.latex(r"3. \ p_i \leq \text{PI}_i")
+
+            st.write('''La cantidad producida qi debe ser al menos 0.1 para evitar valores triviales:''')
+            st.latex(r"4. \ q_i \geq 0.1")
+
+            st.title('Soporte')
             st.write('''Este desarrollo fue generado por el equipo de modelación del negocio cárnico, si hay algún
                      requerimiento, duda o comentario sobre el mismo puede ser a través del líder del equipo
                      Lucas Ramirez, así mismo si se tiene alguna necesidad de desarrollo similar al presente puede

@@ -65,8 +65,11 @@ class CLS_Visualizacion_pricing:
         frm_Capacidad_produccion = st.number_input("Capacidad de Producción en KG al mes", min_value=0, value=770879)
         frm_produccion_inicial = st.number_input("Producción Actual en KG al mes", min_value=0, value=691245)
         frm_precio_inicial = st.number_input("Precio Actual de Venta", min_value=0, value=35096)
-        frm_elasticidad_pesos = st.slider("Elasticidad del precio, al aumentar los pesos indicados generará una reducción de consumo equivalente a KG al mes", 0, 100, value=1)
-        frm_elasticidad_kg = st.slider("Elasticidad en KG, al aumentar los pesos indicados anteriormente cuantos reduce en KG el coonsumo al mes", 0, 1000, value=400)
+
+        st.info('Elasticidad de un producto, si el precio de un articulo aumenta p pesos la demanda de dicho articulo disminuirá q unidades')
+        st.info('Se asume que el precio aumenta y la demanda disminuye, así mismo se asume que el precio baja y la demanda aumenta')
+        frm_elasticidad_pesos = st.slider("Elasticidad del precio, según la definición anterior la cantidad de pesos p que el precio aumenta ", 0, 100, value=1)
+        frm_elasticidad_kg = st.slider("Elasticidad en KG, según la definición anterior la cantidad de kg q que la demanda disminuye ", 0, 1000, value=400)
         frm_capacidad_maxima = st.slider("Cuanto de la capacidad máxima de la linea se usará %", 0, 100, value=100)/100
 
         self.materiales.append(frm_material)
