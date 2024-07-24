@@ -84,15 +84,18 @@ def optimizar(  materiales,
     return precio_final,    KG_Propuestos,    beneficio_esperado
 
 
-def generar_dataframe_calculo_Kg(kg_producidos,kg_propuestos, Precio_venta, Costos_fijos, costo_variable):
+def generar_dataframe_calculo_Kg(kg_producidos,kg_propuestos, Precio_venta, Costos_fijos, costo_variable,elasticidad_pesos,elasticidad_kg,precio_inicial,produccion_inicial,precio_analisis):
     data = {
-        'KG producidos': [x for x in range(kg_producidos, kg_propuestos)],
-        'Precio de venta KG': [Precio_venta]*(-kg_producidos + kg_propuestos),
+        'KG producidos':[x for x in range(kg_producidos, kg_propuestos)],
+        # 'Precio de venta KG': [Precio_venta]*(-kg_producidos + kg_propuestos),
+        'Precio de venta KG':[precio_inicial+elasticidad_pesos*((produccion_inicial-x)/elasticidad_kg) for x in range(kg_producidos, kg_propuestos) ],
         'Costos fijos por KG': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos)],
         'Costos variable por KG': [costo_variable]*(-kg_producidos + kg_propuestos),
         'Costos totales por KG': [(Costos_fijos / kg) + costo_variable for kg in range(kg_producidos, kg_propuestos )],
-        'Beneficio por KG': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )]
-    }
+        'Beneficio por KG': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],       
+        'KG producidos_real':[precio_analisis]*(-kg_producidos + kg_propuestos),
+        'Beneficio analisis': [precio_analisis - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],   
+        }
     df = pd.DataFrame(data)
 
     return df
