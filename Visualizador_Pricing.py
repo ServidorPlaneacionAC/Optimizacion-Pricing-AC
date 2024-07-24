@@ -10,24 +10,53 @@ class CLS_Visualizacion_pricing:
       para la visualización del modelo de pricing
     '''
     def __init__(self) -> None:
+      '''
+      Se inicializan los diccionarios para generar calculos, este diseño inicial esta pensado para evaluar un único material pero 
+      se generan diccionarios y listas estimando un posible crecimiento del desarrollo
       
-      self.materiales=[]
-      self.linea ={}
-      self.Costo_variable_KG ={}
-      self.Costo_fijo_total ={}
-      self.Capacidad_produccion ={}
-      self.produccion_inicial ={}
-      self.precio_inicial ={}
-      self.elasticidad_pesos ={}
-      self.elasticidad_kg ={}
-      self.capacidad_maxima ={}
-      self.beneficio=None
+      Atributos
+        materiales([list]) Lista de materiales a evaluar
+        linea({dicc}) Clave: Material, Valor: Linea del material 
+        Costo_variable_KG({dicc}) Clave: Material, Valor: costo variable por kilogramo 
+        Costo_fijo_total({dicc}) Clave: Material, Valor: Costo fijo total asociado a fabricar este material
+        Capacidad_produccion({dicc}) Clave: Material, Valor: Capacidad total de la linea de producción 
+        produccion_inicial({dicc}) Clave: Material, Valor: Producción actual  
+        precio_inicial({dicc}) Clave: Material, Valor: Precio de comersalización actual 
+
+        Elasticidad de un producto, si el precio de un articulo aunmenta p pesos la demanda de dicho articulo disminuirá q unidades
+
+        elasticidad_pesos ({dicc}) #Clave: Material, Valor: según la definición anterior los pesos p que aumentará el valor del articulo
+        elasticidad_kg ({dicc}) #Clave: Material, Valor: según la definición anterior la demanda q (expresada en KG) que disminuye mi articulo 
+                                                          Importante: asumo que el precio aumenta y mi demanda disminuye
+                                                                      tambien asumo que el precio baja mi demanda aumenta
+
+        capacidad_maxima ({dicc}) Clave: Material, Valor: Capacidad maxima de producción 
+        beneficio ({dicc}) Clave: Material, Valor: Beneficio calculado 
+      '''
+      self.materiales=[] #Lista de materiales a evaluar
+      self.linea ={} #Clave: Material, Valor: Linea del material 
+      self.Costo_variable_KG ={} #Clave: Material, Valor: costo variable por kilogramo 
+      self.Costo_fijo_total ={} #Clave: Material, Valor: Costo fijo total asociado a fabricar este material
+      self.Capacidad_produccion ={} #Clave: Material, Valor: Capacidad total de la linea de producción 
+      self.produccion_inicial ={} #Clave: Material, Valor: Producción actual  
+      self.precio_inicial ={} #Clave: Material, Valor: Precio de comersalización actual 
+
+      # Elasticidad de un producto, si el precio de un articulo aunmenta p pesos la demanda de dicho articulo disminuirá q unidades
+
+      self.elasticidad_pesos ={} #Clave: Material, Valor: según la definición anterior los pesos p que aumentará el valor del articulo
+      self.elasticidad_kg ={} #Clave: Material, Valor: según la definición anterior la demanda q (expresada en KG) que disminuye mi articulo 
+                                 #                      Importante: asumo que el precio aumenta y mi demanda disminuye
+                                 #                                  tambien asumo que el precio baja mi demanda aumenta
+
+      self.capacidad_maxima ={} #Clave: Material, Valor: Capacidad maxima de producción 
+      self.beneficio=None #Clave: Material, Valor: Beneficio calculado 
       self.generar_formulario()
 
     def generar_formulario(self):
-
-        # with st.form("add_ticket_form"):
-            # issue = st.text_area("Describe the issue")
+        '''
+        Genera los campos de captura de información y los inicializa con un valor de ejemplo
+        inicializa los diccionarios e invoca el metodo de generar calculos
+        '''
         frm_linea = st.selectbox("Linea a evaluar", ["Otro", "Chorizos", "Salchichas","Salchichones",
                                                         "Jamones", "Larga Vida", "Carnes Frescas", "Mortadelas"])
         frm_material = st.text_input("Material a evaluar",value="Material de ejemplo")
@@ -39,10 +68,7 @@ class CLS_Visualizacion_pricing:
         frm_elasticidad_pesos = st.slider("Elasticidad del precio, al aumentar los pesos indicados generará una reducción de consumo equivalente a KG al mes", 0, 100, value=1)
         frm_elasticidad_kg = st.slider("Elasticidad en KG, al aumentar los pesos indicados anteriormente cuantos reduce en KG el coonsumo al mes", 0, 1000, value=400)
         frm_capacidad_maxima = st.slider("Cuanto de la capacidad máxima de la linea se usará %", 0, 100, value=100)/100
-        # frm_submitted = st.form_submit_button("Evaluar")
 
-        # if frm_submitted:
-            # Agregar los valores del formulario a los diccionarios
         self.materiales.append(frm_material)
         self.linea[frm_material] = frm_linea
         self.Costo_variable_KG[frm_material] = frm_Costo_variable_KG
@@ -53,7 +79,18 @@ class CLS_Visualizacion_pricing:
         self.elasticidad_pesos[frm_material] = frm_elasticidad_pesos
         self.elasticidad_kg[frm_material] = frm_elasticidad_kg
         self.capacidad_maxima[frm_material] = frm_capacidad_maxima
+        self.generar_calculos(frm_material)
 
+    def generar_calculos(self,frm_material):
+        '''
+        Genera calculos y muestra resultados, si desde la optimiazacion en cuentra un resultado optimo 
+        imprime los resultados de la optimizacion
+        genera las opciones para el escenario what if
+        genera el df requerido para el grafico resultante
+
+        Paramteros:
+        frm_material (str): Material que es la clave de los diccionarios para el que se generará el análisis
+        '''
         precio,kg,beneficio=optimizar(
             self.materiales,
             self.Costo_variable_KG,
@@ -65,7 +102,7 @@ class CLS_Visualizacion_pricing:
             self.elasticidad_kg,
             self.capacidad_maxima
         )
-        if beneficio is not None:            
+        if beneficio is not None: #Si el resultado de la optimizacion es un valor factible           
             st.header("Resultados iniciales:")
             self.imprimir_conclusiones(
                 frm_material,
@@ -80,7 +117,7 @@ class CLS_Visualizacion_pricing:
                     ,Precio_venta=precio[frm_material]
                     ,kg_producidos=int(inicio_grafica)
                     ,kg_propuestos=int(kg[frm_material])
-                    ,costo_variable= frm_Costo_variable_KG
+                    ,costo_variable= self.Costo_variable_KG[frm_material]
                     ,elasticidad_pesos=self.elasticidad_pesos[frm_material]  
                     ,elasticidad_kg=self.elasticidad_kg[frm_material]   
                     ,precio_inicial=self.precio_inicial[frm_material]   
@@ -88,14 +125,13 @@ class CLS_Visualizacion_pricing:
                     ,precio_analisis= precio_analizar          
                     ) 
             self.grafica_lineas(df)
-            if precio_analizar!=int(precio[frm_material]):
+            if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
                 beneficio_inicial=self.precio_inicial[frm_material]-self.Costo_variable_KG[frm_material]-self.Costo_fijo_total[frm_material]/self.produccion_inicial[frm_material]
                 diferencia_en_kg=kg[frm_material]-self.produccion_inicial[frm_material]
                 nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial)*diferencia_en_kg, simbolo='COP ')
                 st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
         else:
             st.error('No se encuentra un posible mejor escenario')
-
 
     def formatear_dinero(self,valor,decimales=2, simbolo=''):
         """

@@ -4,15 +4,20 @@ from Visualizador_Pricing import CLS_Visualizacion_pricing
 
 class CLS_Estructura_Visualizacion:
     '''
-    clase que permite cargar elementos visualizar la transformación del pronostico de reses,
-    se apoya en la clase transformación para generar el pronostico y transformar los datos
+    clase que permite ser la estrutura inicial de la visualización en streamlit, primer paso en la estandarización de desarrollos 
     '''
     def __init__(self) -> None:
-      self.mostrar_navegabilidad()
+      self.mostrar_navegabilidad(["Inicio", "¿Cómo funciona?"])
       
-    def mostrar_navegabilidad(self):
+    def mostrar_navegabilidad(self,paginas=["Inicio", "Archivos de muestra","¿Cómo funciona?"]):
+        '''
+        Genera el slider que permite navegar entre interfaces del desarrollo
+
+        Parametros:
+        paginas [list]: definir las paginas que iran en el slider
+        '''
         st.sidebar.header("Navegación")
-        page = st.sidebar.radio("Ir a:", ["Inicio", "Archivos de muestra","¿Cómo funciona?"])
+        page = st.sidebar.radio("Ir a:", paginas)
 
         if page == "Inicio":
             self.Mostrar_Pantalla_principal('Encontrar Precio óptimo')
@@ -24,6 +29,9 @@ class CLS_Estructura_Visualizacion:
     def Mostrar_Pantalla_principal(self, titulo) -> None:
         '''
         Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
+        
+        Parametros:
+        titulo (str): Indica el titulo de la página actual
         '''
         st.title(titulo)
         st.header("Evaluar Precio Óptimo de una linea")
