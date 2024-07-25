@@ -151,7 +151,7 @@ class CLS_Visualizacion_pricing:
                         ,precio_analisis= precio_analizar          
                         ) 
                 
-                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material]titulo_linea_horizontal='Beneficio Actual')
+                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material],titulo_linea_horizontal='Beneficio Actual')
                 # if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
                 beneficio_inicial=self.precio_inicial[frm_material]*self.produccion_inicial[frm_material]-self.Costo_variable_KG[frm_material]*self.produccion_inicial[frm_material]-self.Costo_fijo_total[frm_material]
                 nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial), simbolo='COP ')
