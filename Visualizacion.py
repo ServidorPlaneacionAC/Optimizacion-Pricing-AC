@@ -87,6 +87,17 @@ class CLS_Estructura_Visualizacion:
             st.write('''La cantidad producida qi debe ser al menos 0.1 para evitar valores triviales:''')
             st.latex(r"4. \ q_i \geq 0.1")
 
+            st.markdown("### Consideraciones:")
+            st.write('''Importante considerar factores tenidos en cuenta y obviados al momento de calcular los beneficios en cada escenario
+                    ,los costos asociados al inventario y costo capital del mismo no está siendo considerados en el ejercicio; así mismo,
+                    los únicos costos en el modelo son los diligenciados por el usuario en la captura de información, se sugiere al usuario
+                    calcular todos los costos y relacionarlos como fijos o variables en función de los Kg producidos.''')
+            st.write('''
+                    Se asume como parte del ejercicio que todos los Kg producidos serán vendidos exitosamente en el mercado, de igual manera,
+                    en la optimización de Kg a producir se restringe la venta disminción del precio, según la elasticidad del producto indicada,
+                    en los escenarios que se generan a partir de modificar el precio del material no se considera la elasticidad del producto.
+            ''')
+
             st.title('Soporte')
             st.write('''Este desarrollo fue generado por el equipo de modelación del negocio cárnico, si hay algún
                      requerimiento, duda o comentario sobre el mismo puede ser a través del líder del equipo
