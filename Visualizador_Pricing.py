@@ -1,5 +1,5 @@
 import streamlit as st
-from Optimizador import optimizar, generar_dataframe_calculo_Kg
+from Optimizador import optimizar, generar_dataframe_calculo_Kg, generar_dataframe_calculo_total
 import mplcursors
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
@@ -107,7 +107,7 @@ class CLS_Visualizacion_pricing:
         )
         if beneficio is not None: #Si el resultado de la optimizacion es un valor factible           
             st.header("Resultados iniciales:")
-            self.imprimir_conclusiones(
+            beneficio_inicial_numerico=self.imprimir_conclusiones(
                 frm_material,
                 kg[frm_material],
                 precio[frm_material],
@@ -115,26 +115,51 @@ class CLS_Visualizacion_pricing:
 
             inicio_grafica = st.slider("Valores del eje x de la grafica (KG producidos)", 1, int(kg[frm_material]), value=int(kg[frm_material]/2))
             precio_analizar = st.slider("Precio para analizar diferentes escenarios", int(precio[frm_material]*0.85), int(self.precio_inicial[frm_material]*1.25), value=int(precio[frm_material]))
-            df=generar_dataframe_calculo_Kg(
-                    Costos_fijos=self.Costo_fijo_total[frm_material]
-                    ,Precio_venta=precio[frm_material]
-                    ,kg_producidos=int(inicio_grafica)
-                    ,kg_propuestos=int(kg[frm_material])
-                    ,costo_variable= self.Costo_variable_KG[frm_material]
-                    ,elasticidad_pesos=self.elasticidad_pesos[frm_material]  
-                    ,elasticidad_kg=self.elasticidad_kg[frm_material]   
-                    ,precio_inicial=self.precio_inicial[frm_material]   
-                    ,produccion_inicial=self.produccion_inicial[frm_material]  
-                    ,precio_analisis= precio_analizar          
-                    ) 
-            self.grafica_lineas(df)
-            if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
-                beneficio_inicial=self.precio_inicial[frm_material]-self.Costo_variable_KG[frm_material]-self.Costo_fijo_total[frm_material]/self.produccion_inicial[frm_material]
-                diferencia_en_kg=kg[frm_material]-self.produccion_inicial[frm_material]
-                nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial)*diferencia_en_kg, simbolo='COP ')
+            
+            opciones  = ['Análisis por KG', 'Análisis completo']
+            opcion_seleccionada = st.selectbox('Selecciona una opción para analizar:', opciones)
+            if opcion_seleccionada == 'Análisis por KG':
+                df=generar_dataframe_calculo_Kg(
+                        Costos_fijos=self.Costo_fijo_total[frm_material]
+                        ,Precio_venta=precio[frm_material]
+                        ,kg_producidos=int(inicio_grafica)
+                        ,kg_propuestos=int(kg[frm_material])
+                        ,costo_variable= self.Costo_variable_KG[frm_material]
+                        ,elasticidad_pesos=self.elasticidad_pesos[frm_material]  
+                        ,elasticidad_kg=self.elasticidad_kg[frm_material]   
+                        ,precio_inicial=self.precio_inicial[frm_material]   
+                        ,produccion_inicial=self.produccion_inicial[frm_material]  
+                        ,precio_analisis= precio_analizar          
+                        ) 
+                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos por Kg',lineas_punteadas=['Beneficio nuevo','Precio nuevo'],linea_horizontal=beneficio_inicial_numerico,titulo_linea_horizontal='Beneficio Actual')
+                if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
+                    beneficio_inicial=self.precio_inicial[frm_material]-self.Costo_variable_KG[frm_material]-self.Costo_fijo_total[frm_material]/self.produccion_inicial[frm_material]
+                    nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]*kg[frm_material]-beneficio_inicial*self.produccion_inicial[frm_material]), simbolo='COP ')
+                    st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
+            else:
+                
+                df=generar_dataframe_calculo_total(
+                        Costos_fijos=self.Costo_fijo_total[frm_material]
+                        ,Precio_venta=precio[frm_material]
+                        ,kg_producidos=int(inicio_grafica)
+                        ,kg_propuestos=int(kg[frm_material])
+                        ,costo_variable= self.Costo_variable_KG[frm_material]
+                        ,elasticidad_pesos=self.elasticidad_pesos[frm_material]  
+                        ,elasticidad_kg=self.elasticidad_kg[frm_material]   
+                        ,precio_inicial=self.precio_inicial[frm_material]   
+                        ,produccion_inicial=self.produccion_inicial[frm_material]  
+                        ,precio_analisis= precio_analizar          
+                        ) 
+                
+                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material]titulo_linea_horizontal='Beneficio Actual')
+                # if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
+                beneficio_inicial=self.precio_inicial[frm_material]*self.produccion_inicial[frm_material]-self.Costo_variable_KG[frm_material]*self.produccion_inicial[frm_material]-self.Costo_fijo_total[frm_material]
+                nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial), simbolo='COP ')
                 st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
+       
+
         else:
-            st.error('No se encuentra un posible mejor escenario')
+            st.error('No se encuentra un posible mejor escenario ')
 
     def formatear_dinero(self,valor,decimales=2, simbolo=''):
         """
@@ -151,43 +176,48 @@ class CLS_Visualizacion_pricing:
         formato_dinero = f"{simbolo}{valor_redondeado:,.2f}"
         return formato_dinero
 
-    def grafica_lineas(self,df):  
+    def grafica_lineas(self,df,titulo_grafico='',titulo_ejex='',titulo_eje_y='',titulos=None, colores=None, lineas_punteadas=[],linea_horizontal=None,titulo_linea_horizontal=''):  
+        """
+            Método que recibe un DataFrame y grafica líneas para cada columna (excepto la primera) en función del eje y.
 
-        ''' Metodo que recibe una lista de elementos que varian en funcion del eje y '''       
-        kg=df[df.columns[0]]
-        Precio_venta=df[df.columns[1]]
-        Costos_fijos=df[df.columns[2]]
-        costo_variable=df[df.columns[3]]
-        costo_totales=df[df.columns[4]]
-        beneficio=df[df.columns[5]]
-        precio_nuevo=df[df.columns[6]]
-        beneficio_nuevo=df[df.columns[7]]
+            Parámetros:
+            - df (pd.DataFrame): DataFrame que contiene los datos a graficar. La primera columna se usa como eje x.
+            - titulo_grafico (str, opcional): Título del gráfico. Por defecto es una cadena vacía.
+            - titulo_ejex (str, opcional): Título del eje x. Si no se proporciona, se utiliza el nombre de la primera columna del DataFrame.
+            - titulo_eje_y (str, opcional): Título del eje y. Por defecto es una cadena vacía.
+            - titulos (list, opcional): Lista de títulos para las líneas. Si no se proporciona, se utilizan los nombres de las columnas del DataFrame (excepto la primera).
+            - colores (list, opcional): Lista de colores para las líneas. Si no se proporciona, se generan colores automáticamente.
+            - lineas_punteadas (list, opcional): Lista de títulos que deben ser representados con líneas punteadas. Por defecto es una lista vacía.
+
+            Retorna:
+            - None: Este método no retorna ningún valor, pero muestra el gráfico generado en Streamlit.
+        """ 
+        lineas = [df[df.columns[i]] for i in range(8)]
+        titulos= df.columns[1:] if titulos is None else titulos
+        colores= self.generar_colores(df.shape[1]-1) if colores is None else colores
+        titulo_ejex = df.columns[0] if titulo_ejex=='' else titulo_ejex
         
         fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(go.Scatter(x=kg, y=Precio_venta, 
-                                name='Precio venta', mode='lines', line=dict(color='green'), legendrank=True))
-    
-        fig.add_trace(go.Scatter(x=kg, y=Costos_fijos, 
-                                name='Costos fijos', mode='lines', line=dict(color='Orange'), legendrank=True))
-    
-        fig.add_trace(go.Scatter(x=kg, y=costo_variable, 
-                                name='Costo variable', mode='lines', line=dict(color='Red'), legendrank=True))
-        
-        fig.add_trace(go.Scatter(x=kg, y=costo_totales, 
-                                name='Costo totales', mode='lines', line=dict(color='yellow'), legendrank=True))
-        
-        fig.add_trace(go.Scatter(x=kg, y=beneficio, 
-                                name='Beneficio', mode='lines', line=dict(color='blue'), legendrank=True))
-            
-        fig.add_trace(go.Scatter(x=kg, y=precio_nuevo, 
-                                name='Precio nuevo', mode='lines', line=dict(color='green',dash='dash'), legendrank=True))
-          
-        fig.add_trace(go.Scatter(x=kg, y=beneficio_nuevo, 
-                                name='Beneficio nuevo fijo', mode='lines', line=dict(color='blue',dash='dash'), legendrank=True))
-      
-        fig.update_layout(title='Análisis de costos y rendimientos por Kg',
-                        xaxis=dict(title='Kg producidos'),
-                        yaxis=dict(title='$$'),
+        for i,titulo,color in zip(lineas[1:],titulos,colores):
+            if titulo in lineas_punteadas:
+                linea=dict(color=color,dash='dash')
+            else:
+                linea=dict(color=color)
+            fig.add_trace(go.Scatter(x=lineas[0], y=i, 
+                                    name=titulo, mode='lines', line=linea, legendrank=True))
+  
+        if linea_horizontal is not None:
+            fig.add_trace(go.Scatter(
+                x=[df[df.columns[0]].min(), df[df.columns[0]].max()],
+                y=[linea_horizontal, linea_horizontal],
+                mode='lines',
+                name=titulo_linea_horizontal,
+                line=dict(color='black', width=2, dash='dash')
+            ))
+
+        fig.update_layout(title=titulo_grafico,
+                        xaxis=dict(title=titulo_ejex),
+                        yaxis=dict(title=titulo_eje_y),
                         legend=dict(
                         orientation="h",
                         yanchor="bottom",
@@ -197,6 +227,43 @@ class CLS_Visualizacion_pricing:
                     ))
 
         st.write(fig)
+
+    def generar_colores(self,cantidad):
+        """
+        Genera una lista de colores diferentes.
+
+        Parámetros:
+        - cantidad (int): Número de colores diferentes a generar.
+
+        Retorna:
+        - lista_colores (list): Lista de colores en formato hexadecimal.
+        """
+        import matplotlib.colors as mcolors
+        # Obtener una lista de colores únicos predefinidos en matplotlib
+        colores_predefinidos = list(mcolors.TABLEAU_COLORS.values()) + list(mcolors.CSS4_COLORS.values())
+        
+        # Si la cantidad de colores solicitados es menor o igual al número de colores predefinidos, devolvemos los primeros 'cantidad' colores
+        if cantidad <= len(colores_predefinidos):
+            return colores_predefinidos[:cantidad]
+        
+        # Si se requieren más colores, generar colores adicionales
+        else:
+            import numpy as np
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import rgb2hex
+            
+            # Generar colores adicionales
+            colores_adicionales = []
+            for i in np.linspace(0, 1, cantidad - len(colores_predefinidos)):
+                colores_adicionales.append(plt.cm.tab20(i))  # Cambiar 'tab20' por cualquier otro mapa de colores si es necesario
+            
+            # Convertir los colores adicionales a formato hexadecimal
+            colores_adicionales_hex = [rgb2hex(color) for color in colores_adicionales]
+            
+            # Combinar los colores predefinidos con los colores adicionales
+            return colores_predefinidos + colores_adicionales_hex
+
+
 
     def imprimir_conclusiones(self,
                               material,
@@ -209,17 +276,19 @@ class CLS_Visualizacion_pricing:
             precio_imprimir=self.formatear_dinero(precio_propuesto,simbolo='COP ')
             beneficio_inicial=self.precio_inicial[material]-self.Costo_variable_KG[material]-self.Costo_fijo_total[material]/self.produccion_inicial[material]
             diferencia_beneficio=beneficio-beneficio_inicial
-            diferencia_beneficio_total_imprimir=diferencia_beneficio
+            diferencia_beneficio_total=beneficio*kg_producir -beneficio_inicial*self.produccion_inicial[material]
+            beneficio_inicial_numerico=beneficio_inicial
             beneficio_inicial=self.formatear_dinero(beneficio_inicial,simbolo='COP ')
             beneficio_imprimir=self.formatear_dinero(beneficio,simbolo='COP ')
             diferencia_beneficio=self.formatear_dinero(diferencia_beneficio,simbolo='COP ')
             diferencia_en_precio_imprimir=self.formatear_dinero(self.precio_inicial[material]-precio_propuesto,simbolo='COP ')
 
             diferencia_en_kg=kg_producir-self.produccion_inicial[material]
-            diferencia_beneficio_total_imprimir=self.formatear_dinero(diferencia_beneficio_total_imprimir*diferencia_en_kg,simbolo='COP ')
+            diferencia_beneficio_total_imprimir=self.formatear_dinero(diferencia_beneficio_total,simbolo='COP ')
             diferencia_en_kg_imprimir=self.formatear_dinero(diferencia_en_kg)
             
             st.success(f'Se ha encontrado una solución óptima, con el precio {precio_imprimir} el nuevo beneficio sera {beneficio_imprimir} por KG, pasando de fabricar {produccion_inicial_imprimir} KG a fabricar {kg_producir_imprimir} KG')        
             st.success(f'El beneficio anterior era {beneficio_inicial} por Kg lo que nos indica una variación en el beneficio de {diferencia_beneficio} por KG')
             st.success(f'Con una reducción en el precio de {diferencia_en_precio_imprimir} y produciendo {diferencia_en_kg_imprimir} kg mas se obtiene en total un beneficio adicional de {diferencia_beneficio_total_imprimir}')
             
+            return beneficio_inicial_numerico

@@ -134,13 +134,54 @@ def generar_dataframe_calculo_Kg(kg_producidos,kg_propuestos, Precio_venta, Cost
     
     data = {
         'KG producidos':[x for x in range(kg_producidos, kg_propuestos)],
-        'Precio de venta KG':[precio_inicial+elasticidad_pesos*((produccion_inicial-x)/elasticidad_kg) for x in range(kg_producidos, kg_propuestos) ],
-        'Costos fijos por KG': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos)],
-        'Costos variable por KG': [costo_variable]*(-kg_producidos + kg_propuestos),
-        'Costos totales por KG': [(Costos_fijos / kg) + costo_variable for kg in range(kg_producidos, kg_propuestos )],
-        'Beneficio por KG': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],       
-        'KG producidos_real':[precio_analisis]*(-kg_producidos + kg_propuestos),
-        'Beneficio analisis': [precio_analisis - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],   
+        'Precio venta':[precio_inicial+elasticidad_pesos*((produccion_inicial-x)/elasticidad_kg) for x in range(kg_producidos, kg_propuestos) ],
+        'Costos fijos': [Costos_fijos / x for x in range(kg_producidos, kg_propuestos)],
+        'Costo variable': [costo_variable]*(-kg_producidos + kg_propuestos),
+        'Costo totales': [(Costos_fijos / kg) + costo_variable for kg in range(kg_producidos, kg_propuestos )],
+        'Beneficio con precio calculado': [Precio_venta - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],       
+        'Precio nuevo':[precio_analisis]*(-kg_producidos + kg_propuestos),
+        'Beneficio nuevo': [precio_analisis - ((Costos_fijos / kg) + costo_variable) for kg in range(kg_producidos, kg_propuestos )],   
+        }
+    df = pd.DataFrame(data)
+
+    return df
+def generar_dataframe_calculo_total(kg_producidos,kg_propuestos, Precio_venta, Costos_fijos, costo_variable,elasticidad_pesos,elasticidad_kg,precio_inicial,produccion_inicial,precio_analisis):
+    """
+        Genera un DataFrame con cálculos relacionados con la producción, precios de venta, costos y beneficios por kilogramo producido.
+
+        Parámetros:
+        - kg_producidos (int): Cantidad inicial de kilogramos producidos.
+        - kg_propuestos (int): Cantidad propuesta de kilogramos a producir.
+        - Precio_venta (float): Precio de venta del kilogramo.
+        - Costos_fijos (float): Costos fijos totales.
+        - costo_variable (float): Costo variable por kilogramo.
+        - elasticidad_pesos (float): Elasticidad del precio en relación a la cantidad producida.
+        - elasticidad_kg (float): Elasticidad de la cantidad producida en relación al precio.
+        - precio_inicial (float): Precio inicial del kilogramo.
+        - produccion_inicial (float): Producción inicial en kilogramos.
+        - precio_analisis (float): Precio de análisis del kilogramo.
+
+        Retorna:
+        - df (pd.DataFrame): DataFrame con los siguientes cálculos por kilogramo:
+            - 'KG producidos': Rango de kilogramos desde kg_producidos hasta kg_propuestos.
+            - 'Precio de venta KG': Precio de venta calculado por kilogramo.
+            - 'Costos fijos por KG': Costos fijos por kilogramo.
+            - 'Costos variable por KG': Costos variables por kilogramo.
+            - 'Costos totales por KG': Costos totales (fijos + variables) por kilogramo.
+            - 'Beneficio por KG': Beneficio por kilogramo.
+            - 'KG producidos_real': Precio de análisis repetido para cada kilogramo.
+            - 'Beneficio analisis': Beneficio basado en el precio de análisis por kilogramo.
+    """ 
+    
+    data = {
+        'KG producidos':[x for x in range(kg_producidos, kg_propuestos)],
+        'Venta total':[x*(precio_inicial+elasticidad_pesos*((produccion_inicial-x)/elasticidad_kg)) for x in range(kg_producidos, kg_propuestos) ],
+        'Costo fijo': [Costos_fijos]*(-kg_producidos + kg_propuestos),
+        'Costo variable': [costo_variable* x for x in range(kg_producidos, kg_propuestos)],
+        'Costo total': [(Costos_fijos) + costo_variable*kg for kg in range(kg_producidos, kg_propuestos )],
+        'Beneficio con precio calculado': [(Precio_venta*kg) - (Costos_fijos + (costo_variable*kg)) for kg in range(kg_producidos, kg_propuestos )],       
+        'Nueva venta total':[precio_analisis * x for x in range(kg_producidos, kg_propuestos)],
+        'Beneficio nuevo': [precio_analisis*kg - ((Costos_fijos) + costo_variable*kg) for kg in range(kg_producidos, kg_propuestos )],   
         }
     df = pd.DataFrame(data)
 
