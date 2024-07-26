@@ -1,13 +1,14 @@
 import streamlit as st
 from Optimizador import optimizar, generar_dataframe_calculo_Kg
 from Visualizador_Pricing import CLS_Visualizacion_pricing
+from Visualizador_variacion_costos import CLS_Visualizacion_variacion_costos
 
 class CLS_Estructura_Visualizacion:
     '''
     clase que permite ser la estrutura inicial de la visualización en streamlit, primer paso en la estandarización de desarrollos 
     '''
     def __init__(self) -> None:
-      self.mostrar_navegabilidad(["Inicio", "¿Cómo funciona?"])
+      self.mostrar_navegabilidad(["Inicio", "Variación de costos", "¿Cómo funciona?"])
       
     def mostrar_navegabilidad(self,paginas=["Inicio", "Archivos de muestra","¿Cómo funciona?"]):
         '''
@@ -21,8 +22,8 @@ class CLS_Estructura_Visualizacion:
 
         if page == "Inicio":
             self.Mostrar_Pantalla_principal('Encontrar Precio óptimo')
-        elif page == "Archivos de muestra":
-            self.Mostrar_Pantalla_archivos_muestra('Archivos de muestra')
+        elif page == "Variación de costos":
+            self.Mostrar_Pantalla_variacion_costos('Variación de costos')
         elif page=="¿Cómo funciona?":
             self.Mostrar_Pantalla_como_funciona('¿Cómo funciona?')
       
@@ -38,12 +39,12 @@ class CLS_Estructura_Visualizacion:
 
         pricing=CLS_Visualizacion_pricing()
       
-    def Mostrar_Pantalla_archivos_muestra(self, titulo) -> None:
+    def Mostrar_Pantalla_variacion_costos(self, titulo) -> None:
         '''
         Genera la pantalla principal, habilita la impresión del df de muestra, carga y trasnformación de datos
         '''
-        st.title(titulo)
-      
+        variacion_costos=CLS_Visualizacion_variacion_costos()
+        
     def Mostrar_Pantalla_como_funciona(self, titulo) -> None:
             st.title(titulo)    
             st.subheader("Modelo Matemático del Problema de Optimización")
