@@ -1,5 +1,5 @@
 import streamlit as st
-from Optimizador import optimizar, generar_dataframe_calculo_Kg, generar_dataframe_calculo_total
+from Optimizador import optimizar, generar_dataframe_calculo_Kg, generar_dataframe_calculo_total,calcular_kg_equivalentes
 import mplcursors
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
@@ -131,13 +131,21 @@ class CLS_Visualizacion_pricing:
                         ,produccion_inicial=self.produccion_inicial[frm_material]  
                         ,precio_analisis= precio_analizar          
                         ) 
-                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos por Kg',lineas_punteadas=['Beneficio nuevo','Precio nuevo'],linea_horizontal=beneficio_inicial_numerico,titulo_linea_horizontal='Beneficio Actual')
                 if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
                     beneficio_inicial=self.precio_inicial[frm_material]-self.Costo_variable_KG[frm_material]-self.Costo_fijo_total[frm_material]/self.produccion_inicial[frm_material]
                     nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]*kg[frm_material]-beneficio_inicial*self.produccion_inicial[frm_material]), simbolo='COP ')
                     st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
-            else:
+                    kg_equivalentes_nuevo_precio_con_elasticidad=calcular_kg_equivalentes(elasticidad_kg=self.elasticidad_kg[frm_material],
+                                             elasticidad_pesos=self.elasticidad_pesos[frm_material] ,
+                                             precio_inicial=self.precio_inicial[frm_material]   
+                                             ,precio_venta=precio_analizar
+                                             ,produccion_inicial=self.produccion_inicial[frm_material])
+                    self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos por Kg',lineas_punteadas=['Beneficio nuevo','Precio nuevo'],linea_horizontal=beneficio_inicial_numerico,titulo_linea_horizontal='Beneficio Actual',lineas_verticales=[self.produccion_inicial[frm_material],kg_equivalentes_nuevo_precio_con_elasticidad],titulos_lineas_verticales=['Producción actual','Kg esperados a vender con el nuevo precio ingresado (considera elasticidad)'])
+                else:
+                    self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos por Kg',lineas_punteadas=['Beneficio nuevo','Precio nuevo'],linea_horizontal=beneficio_inicial_numerico,titulo_linea_horizontal='Beneficio Actual',lineas_verticales=[self.produccion_inicial[frm_material]],titulos_lineas_verticales=['Producción actual'])
                 
+            else:
+                st.write('raios')
                 df=generar_dataframe_calculo_total(
                         Costos_fijos=self.Costo_fijo_total[frm_material]
                         ,Precio_venta=precio[frm_material]
@@ -150,13 +158,20 @@ class CLS_Visualizacion_pricing:
                         ,produccion_inicial=self.produccion_inicial[frm_material]  
                         ,precio_analisis= precio_analizar          
                         ) 
-                
-                self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material],titulo_linea_horizontal='Beneficio Actual')
-                # if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
-                beneficio_inicial=self.precio_inicial[frm_material]*self.produccion_inicial[frm_material]-self.Costo_variable_KG[frm_material]*self.produccion_inicial[frm_material]-self.Costo_fijo_total[frm_material]
-                nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial), simbolo='COP ')
-                st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
-       
+                if precio_analizar!=int(precio[frm_material]): #Genera conclusión final del escenario what if
+                    beneficio_inicial=self.precio_inicial[frm_material]*self.produccion_inicial[frm_material]-self.Costo_variable_KG[frm_material]*self.produccion_inicial[frm_material]-self.Costo_fijo_total[frm_material]
+                    nuevo_beneficio_imprimir=self.formatear_dinero((df.iloc[-1, -1]-beneficio_inicial), simbolo='COP ')
+                    st.success(f'Con el nuevo precio ingresado, se obtendría un beneficio adicional total de {nuevo_beneficio_imprimir} sobre el beneficio actual')
+                    kg_equivalentes_nuevo_precio_con_elasticidad=calcular_kg_equivalentes(elasticidad_kg=self.elasticidad_kg[frm_material],
+                                             elasticidad_pesos=self.elasticidad_pesos[frm_material] ,
+                                             precio_inicial=self.precio_inicial[frm_material]   
+                                             ,precio_venta=precio_analizar
+                                             ,produccion_inicial=self.produccion_inicial[frm_material])
+                    self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material],titulo_linea_horizontal='Beneficio Actual',lineas_verticales=[self.produccion_inicial[frm_material],kg_equivalentes_nuevo_precio_con_elasticidad],titulos_lineas_verticales=['Producción actual','Kg esperados a vender con el nuevo precio ingresado (considera elasticidad)'])
+                else: 
+                    self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos totales',lineas_punteadas=['Beneficio nuevo','Nueva venta total'],linea_horizontal=beneficio_inicial_numerico*self.produccion_inicial[frm_material],titulo_linea_horizontal='Beneficio Actual',lineas_verticales=[self.produccion_inicial[frm_material],],titulos_lineas_verticales=['Producción actual',])
+           
+
 
         else:
             st.error('No se encuentra un posible mejor escenario ')
@@ -176,7 +191,8 @@ class CLS_Visualizacion_pricing:
         formato_dinero = f"{simbolo}{valor_redondeado:,.2f}"
         return formato_dinero
 
-    def grafica_lineas(self,df,titulo_grafico='',titulo_ejex='',titulo_eje_y='',titulos=None, colores=None, lineas_punteadas=[],linea_horizontal=None,titulo_linea_horizontal=''):  
+    def grafica_lineas(self, df, titulo_grafico='', titulo_ejex='', titulo_eje_y='', titulos=None, colores=None, lineas_punteadas=[], linea_horizontal=None, titulo_linea_horizontal='', lineas_verticales=None, titulos_lineas_verticales=None):
+        
         """
             Método que recibe un DataFrame y grafica líneas para cada columna (excepto la primera) en función del eje y.
 
@@ -188,24 +204,28 @@ class CLS_Visualizacion_pricing:
             - titulos (list, opcional): Lista de títulos para las líneas. Si no se proporciona, se utilizan los nombres de las columnas del DataFrame (excepto la primera).
             - colores (list, opcional): Lista de colores para las líneas. Si no se proporciona, se generan colores automáticamente.
             - lineas_punteadas (list, opcional): Lista de títulos que deben ser representados con líneas punteadas. Por defecto es una lista vacía.
+            - linea_horizontal (float, opcional): Valor en el eje y donde se dibujará una línea horizontal. Por defecto es None.
+            - titulo_linea_horizontal (str, opcional): Título de la línea horizontal. Por defecto es una cadena vacía.
+            - lineas_verticales (list, opcional): Lista de valores en el eje x donde se dibujarán líneas verticales. Por defecto es None.
+            - titulos_lineas_verticales (list, opcional): Lista de títulos de las líneas verticales. Por defecto es una cadena vacía.
 
             Retorna:
             - None: Este método no retorna ningún valor, pero muestra el gráfico generado en Streamlit.
-        """ 
+        """
         lineas = [df[df.columns[i]] for i in range(8)]
-        titulos= df.columns[1:] if titulos is None else titulos
-        colores= self.generar_colores(df.shape[1]-1) if colores is None else colores
-        titulo_ejex = df.columns[0] if titulo_ejex=='' else titulo_ejex
-        
+        titulos = df.columns[1:] if titulos is None else titulos
+        colores = self.generar_colores(df.shape[1] - 1) if colores is None else colores
+        titulo_ejex = df.columns[0] if titulo_ejex == '' else titulo_ejex
+
         fig = make_subplots(specs=[[{"secondary_y": True}]])
-        for i,titulo,color in zip(lineas[1:],titulos,colores):
+        for i, titulo, color in zip(lineas[1:], titulos, colores):
             if titulo in lineas_punteadas:
-                linea=dict(color=color,dash='dash')
+                linea = dict(color=color, dash='dash')
             else:
-                linea=dict(color=color)
-            fig.add_trace(go.Scatter(x=lineas[0], y=i, 
+                linea = dict(color=color)
+            fig.add_trace(go.Scatter(x=lineas[0], y=i,
                                     name=titulo, mode='lines', line=linea, legendrank=True))
-  
+
         if linea_horizontal is not None:
             fig.add_trace(go.Scatter(
                 x=[df[df.columns[0]].min(), df[df.columns[0]].max()],
@@ -215,18 +235,29 @@ class CLS_Visualizacion_pricing:
                 line=dict(color='black', width=2, dash='dash')
             ))
 
+        if lineas_verticales is not None and titulos_lineas_verticales is not None:
+            for linea_vertical, titulo_linea_vertical in zip(lineas_verticales, titulos_lineas_verticales):
+                fig.add_trace(go.Scatter(
+                    x=[linea_vertical, linea_vertical],
+                    y=[df.iloc[:, 1:].min().min(), df.iloc[:, 1:].max().max()],
+                    mode='lines',
+                    name=titulo_linea_vertical,
+                    line=dict(color='red', width=2, dash='dash')
+                ))
+
         fig.update_layout(title=titulo_grafico,
                         xaxis=dict(title=titulo_ejex),
                         yaxis=dict(title=titulo_eje_y),
                         legend=dict(
-                        orientation="h",
-                        yanchor="bottom",
-                        y=1.02,
-                        xanchor="right",
-                        x=1
-                    ))
+                            orientation="h",
+                            yanchor="bottom",
+                            y=1.02,
+                            xanchor="right",
+                            x=1
+                        ))
 
         st.write(fig)
+
 
     def generar_colores(self,cantidad):
         """

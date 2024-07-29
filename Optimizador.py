@@ -186,3 +186,10 @@ def generar_dataframe_calculo_total(kg_producidos,kg_propuestos, Precio_venta, C
     df = pd.DataFrame(data)
 
     return df
+
+def calcular_kg_equivalentes(precio_venta, precio_inicial, elasticidad_pesos, produccion_inicial, elasticidad_kg):
+    '''
+    dado un precio indica segun la elasticidad de demanda del prodcuto la cantidad de kg que se estima vender 
+    '''
+    x = produccion_inicial - (elasticidad_kg * (precio_venta - precio_inicial) / elasticidad_pesos)
+    return x
