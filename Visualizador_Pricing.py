@@ -145,7 +145,6 @@ class CLS_Visualizacion_pricing:
                     self.grafica_lineas(df,titulo_grafico='Análisis de costos y rendimientos por Kg',lineas_punteadas=['Beneficio nuevo','Precio nuevo'],linea_horizontal=beneficio_inicial_numerico,titulo_linea_horizontal='Beneficio Actual',lineas_verticales=[self.produccion_inicial[frm_material]],titulos_lineas_verticales=['Producción actual'])
                 
             else:
-                st.write('raios')
                 df=generar_dataframe_calculo_total(
                         Costos_fijos=self.Costo_fijo_total[frm_material]
                         ,Precio_venta=precio[frm_material]
