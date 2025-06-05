@@ -1,3 +1,5 @@
+https://optimizacion-pricing-ac-6f794vnk894.streamlit.app/
+
 # 🎫 Support ticket workflow template
 
 A simple Streamlit app showing an internal tool that lets you create, manage, and visualize support tickets. 
